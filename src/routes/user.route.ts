@@ -4,23 +4,14 @@ import { verifyToken } from "../middlewares/jwt.middleware";
 
 const router = Router();
 
-// path: http://localhost:3000/api/vi/users
-
-//! router.use(verifyToken); // This will protect all routes below
-
-// Get all users
 router.get("/", verifyToken, userController.getAllUsers);
 
-// Get a user by id
-router.get("/:id", userController.getUser);
+router.get("/:id", verifyToken, userController.getUserById);
 
-// Create a new user
-router.post("/", userController.createUser);
+router.post("/", verifyToken, userController.createUser);
 
-// Update a user
-router.put("/:id", userController.updateUser);
+router.put("/:id", verifyToken, userController.updateUser);
 
-// Delete a user
-router.delete("/:id", userController.deleteUser);
+router.delete("/:id", verifyToken, userController.deleteUser);
 
 export default router;

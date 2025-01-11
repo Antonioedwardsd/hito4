@@ -1,38 +1,34 @@
-import { pool } from "../config/database";
-import { User } from "../interfaces/user.interface";
+import {
+	Table,
+	Column,
+	Model,
+	DataType,
+	PrimaryKey,
+	IsEmail,
+	Unique,
+	AllowNull,
+	Default,
+	IsUUID,
+} from "sequelize-typescript";
 
-const findAll = async () => {
-	const { rows } = await pool.query("SELECT * FROM users");
-	return rows as User[];
-};
+@Table({
+	tableName: "users",
+	timestamps: true,
+})
+export default class User extends Model {
+	@IsUUID(4)
+	@PrimaryKey
+	@Default(DataType.UUIDV4)
+	@Column(DataType.UUID)
+	uid!: string;
 
-const findOneByEmail = async (email: string) => {
-	const query = {
-		text: `
-		SELECT * FROM USERS
-		WHERE email = $1
-		`,
-		values: [email],
-	};
+	@IsEmail
+	@Unique
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	email!: string;
 
-	const { rows } = await pool.query(query);
-
-	return rows[0] as User;
-};
-
-const create = async (email: string, password: string) => {
-	const query = {
-		text: `INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *`,
-		values: [email, password],
-	};
-
-	const { rows } = await pool.query(query);
-
-	return rows[0] as User;
-};
-
-export const UserModel = {
-	create,
-	findOneByEmail,
-	findAll,
-};
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	password!: string;
+}

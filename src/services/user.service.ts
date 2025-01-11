@@ -1,72 +1,61 @@
 import bcrypt from "bcryptjs";
-import { UserModel } from "../models/user.model";
-import { pool } from "../config/database";
+import { User } from "../models/user.model";
 
 const getAllUsers = async () => {
-	const query = {
-		text: `SELECT * FROM users`,
-	};
-	const { rows } = await pool.query(query);
-	return rows;
+	return await User.findAll();
 };
 
 const getUserByEmail = async (email: string) => {
-	const user = await UserModel.findOneByEmail(email);
-	return user;
+	return await User.findOne({ where: { email } });
 };
 
 const getUserById = async (id: string) => {
-	const query = {
-		text: `SELECT * FROM users WHERE id = $1`,
-		values: [id],
-	};
-	const { rows } = await pool.query(query);
-	return rows[0];
+	return await User.findByPk(id);
 };
 
 const createUser = async (email: string, password: string) => {
-	const user = await UserModel.findOneByEmail(email);
+	const existingUser = await User.findOne({ where: { email } });
 
-	if (user) {
-		throw new Error("User already exists");
+	if (existingUser) {
+		throw new Error("Email already in use");
 	}
 
 	const saltPassword = await bcrypt.genSalt(10);
 	const hashedPassword = await bcrypt.hash(password, saltPassword);
 
-	const newUser = await UserModel.create(email, hashedPassword);
-
-	return newUser;
+	return await User.create({ email, password: hashedPassword });
 };
 
 const updateUser = async (id: string, email: string, password: string) => {
+	const user = await User.findByPk(id);
+
+	if (!user) {
+		throw new Error("User not found");
+	}
+
 	const saltPassword = await bcrypt.genSalt(10);
 	const hashedPassword = await bcrypt.hash(password, saltPassword);
 
-	const query = {
-		text: `UPDATE users SET email = $1, password = $2 WHERE id = $3 RETURNING *`,
-		values: [email, hashedPassword, id],
-	};
-
-	const { rows } = await pool.query(query);
-	return rows[0];
+	await user.update({ email, password: hashedPassword });
+	return user;
 };
 
 const deleteUser = async (id: string) => {
-	const query = {
-		text: `DELETE FROM users WHERE id = $1 RETURNING *`,
-		values: [id],
-	};
+	const user = await User.findByPk(id);
 
-	const { rows } = await pool.query(query);
-	return rows[0];
+	if (!user) {
+		throw new Error("User not found");
+	}
+
+	await user.destroy();
+	return { message: "User deleted successfully" };
 };
 
 export const userService = {
 	getAllUsers,
-	createUser,
 	getUserByEmail,
 	getUserById,
+	createUser,
 	updateUser,
 	deleteUser,
 };

@@ -1,89 +1,96 @@
 import { Request, Response } from "express";
-import { userService } from "../services/user.service";
+import User from "../models/user.model";
 
 const getAllUsers = async (req: Request, res: Response) => {
 	try {
-		const users = await userService.getAllUsers();
-		res.json({ email: req.email, users });
+		const users = await User.findAll();
+		res.json(users);
 	} catch (error) {
-		if (error instanceof Error) {
-			res.status(500).json({ message: error.message });
-		} else {
-			res.status(500).send("An unexpected error occurred");
-		}
+		res.status(500).json({
+			error:
+				error instanceof Error ? error.message : "An unexpected error occurred",
+		});
 	}
 };
 
-const getUser = async (req: Request, res: Response) => {
+const getUserById = async (req: Request, res: Response): Promise<void> => {
 	try {
-		const user = await userService.getUserById(req.params.id);
+		const user = await User.findByPk(req.params.id);
 		if (!user) {
 			res.status(404).json({ message: "User not found" });
+			return;
 		}
 		res.json(user);
 	} catch (error) {
-		if (error instanceof Error) {
-			res.status(500).json({ message: error.message });
-		} else {
-			res.status(500).send("Server error occurred");
-		}
+		res.status(500).json({
+			error:
+				error instanceof Error ? error.message : "An unexpected error occurred",
+		});
 	}
 };
 
-const createUser = async (req: Request, res: Response) => {
+const createUser = async (req: Request, res: Response): Promise<void> => {
 	try {
 		const { email, password } = req.body;
-		const newUser = await userService.createUser(email, password);
+
+		const existingUser = await User.findOne({ where: { email } });
+		if (existingUser) {
+			res.status(400).json({ message: "Email already in use" });
+			return;
+		}
+
+		const newUser = await User.create({ email, password });
 		res.status(201).json(newUser);
 	} catch (error) {
-		if (error instanceof Error) {
-			res.status(400).json({ message: error.message });
-		} else {
-			res.status(500).send("Server error occurred");
-		}
+		res.status(500).json({
+			error:
+				error instanceof Error ? error.message : "An unexpected error occurred",
+		});
 	}
 };
 
-const updateUser = async (req: Request, res: Response) => {
+const updateUser = async (req: Request, res: Response): Promise<void> => {
 	try {
 		const { email, password } = req.body;
-		const updatedUser = await userService.updateUser(
-			req.params.id,
-			email,
-			password
-		);
-		if (!updatedUser) {
+		const user = await User.findByPk(req.params.id);
+
+		if (!user) {
 			res.status(404).json({ message: "User not found" });
+			return;
 		}
-		res.json(updatedUser);
+
+		await user.update({ email, password });
+		res.json(user);
 	} catch (error) {
-		if (error instanceof Error) {
-			res.status(500).json({ message: error.message });
-		} else {
-			res.status(500).send("Server error occurred");
-		}
+		res.status(500).json({
+			error:
+				error instanceof Error ? error.message : "An unexpected error occurred",
+		});
 	}
 };
 
-const deleteUser = async (req: Request, res: Response) => {
+const deleteUser = async (req: Request, res: Response): Promise<void> => {
 	try {
-		const deletedUser = await userService.deleteUser(req.params.id);
-		if (!deletedUser) {
+		const user = await User.findByPk(req.params.id);
+
+		if (!user) {
 			res.status(404).json({ message: "User not found" });
+			return;
 		}
+
+		await user.destroy();
 		res.json({ message: "User deleted successfully" });
 	} catch (error) {
-		if (error instanceof Error) {
-			res.status(500).json({ message: error.message });
-		} else {
-			res.status(500).send("An unexpected error occurred");
-		}
+		res.status(500).json({
+			error:
+				error instanceof Error ? error.message : "An unexpected error occurred",
+		});
 	}
 };
 
 export const userController = {
 	getAllUsers,
-	getUser,
+	getUserById,
 	createUser,
 	updateUser,
 	deleteUser,
