@@ -10,9 +10,6 @@ const login = async (req: Request, res: Response): Promise<void> => {
 		const normalizedEmail = email.trim().toLowerCase();
 
 		const user = await User.findOne({ where: { email: normalizedEmail } });
-		console.log("User found:", user); // Verifica si el usuario existe
-		console.log("Password from DB:", user?.password); // Verifica el hash de la contraseña
-		console.log("Password from Request:", password); // Verifica la contraseña ingresada
 
 		if (!user) {
 			res.status(401).json({ error: "Invalid credentials" });
