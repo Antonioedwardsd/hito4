@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import Task from "../models/task.model";
-import { title } from "process";
 
 const getAllTasks = async (req: Request, res: Response): Promise<void> => {
 	try {
