@@ -1,32 +1,41 @@
-import { Table, Column, Model, DataType } from "sequelize-typescript";
+import {
+	Table,
+	Column,
+	Model,
+	DataType,
+	PrimaryKey,
+	AllowNull,
+	Default,
+	IsUUID,
+	ForeignKey,
+	BelongsTo,
+} from "sequelize-typescript";
+import User from "./user.model";
 
 @Table({
 	tableName: "tasks",
 	timestamps: true,
 })
 export default class Task extends Model {
-	@Column({
-		type: DataType.INTEGER,
-		autoIncrement: true,
-		primaryKey: true,
-	})
-	uid!: number;
+	@IsUUID(4)
+	@PrimaryKey
+	@Default(DataType.UUIDV4)
+	@Column(DataType.UUID)
+	declare id: string;
 
-	@Column({
-		type: DataType.STRING,
-		allowNull: false,
-	})
-	title!: string;
+	@AllowNull(false)
+	@Column(DataType.STRING)
+	declare title: string;
 
-	@Column({
-		type: DataType.TEXT,
-		allowNull: true,
-	})
-	description!: string;
+	@AllowNull(false)
+	@Column(DataType.TEXT)
+	declare description: string;
 
-	@Column({
-		type: DataType.BOOLEAN,
-		defaultValue: false,
-	})
-	completed!: boolean;
+	@ForeignKey(() => User)
+	@AllowNull(false)
+	@Column(DataType.UUID)
+	declare userId: string;
+
+	@BelongsTo(() => User)
+	declare user: User;
 }

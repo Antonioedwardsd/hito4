@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { User } from "../models/user.model";
+import User from "../models/user.model";
 import { generateToken } from "../utils/auth.utils";
 
 const loginUser = async (email: string, password: string) => {

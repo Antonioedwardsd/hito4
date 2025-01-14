@@ -20,15 +20,15 @@ export default class User extends Model {
 	@PrimaryKey
 	@Default(DataType.UUIDV4)
 	@Column(DataType.UUID)
-	uid!: string;
+	declare uid: string;
 
 	@IsEmail
 	@Unique
 	@AllowNull(false)
 	@Column(DataType.STRING)
-	email!: string;
+	declare email: string;
 
 	@AllowNull(false)
 	@Column(DataType.STRING)
-	password!: string;
+	declare password: string;
 }
