@@ -4,11 +4,19 @@ import { sequelize } from "./config/sequelize";
 import authRoute from "./routes/auth.route";
 import userRouter from "./routes/user.route";
 import taskRoute from "./routes/task.route";
+import openapiSpecification from "./config/swagger";
+import swaggerUi from "swagger-ui-express";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+app.use(
+	"/api/v1/api-docs",
+	swaggerUi.serve,
+	swaggerUi.setup(openapiSpecification)
+);
 
 app.use(express.json());
 
@@ -18,7 +26,7 @@ app.use("/api/v1/tasks", taskRoute);
 
 const main = async () => {
 	try {
-		// DB con Sequelize
+		// TEST CONNECTION TO DB
 		await sequelize.authenticate();
 		console.log("Database connected successfully");
 
